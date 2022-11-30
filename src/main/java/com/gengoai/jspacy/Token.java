@@ -70,8 +70,8 @@ public class Token {
       return null;
    }
 
-   public Sentence getSentence() {
-      for (Sentence sentence : parent.getSentences()) {
+   public Span getSentence() {
+      for (Span sentence : parent.getSentences()) {
          if (sentence.getStartTokenIdx() <= i && sentence.getEndTokenIdx() > i) {
             return sentence;
          }
@@ -79,9 +79,9 @@ public class Token {
       return null;
    }
 
-   public List<Entity> getEntities() {
-      List<Entity> entities = new ArrayList<>();
-      for (Entity entity : parent.getEntities()) {
+   public List<Span> getEntities() {
+      List<Span> entities = new ArrayList<>();
+      for (Span entity : parent.getEntities()) {
          if (entity.getStartTokenIdx() <= i && entity.getEndTokenIdx() > i) {
             entities.add(entity);
          }

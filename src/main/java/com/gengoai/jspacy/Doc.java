@@ -10,13 +10,12 @@ import java.util.List;
 @Data
 public class Doc {
    private final List<Token> tokens = new ArrayList<>();
-   private final List<Sentence> sentences = new ArrayList<>();
-
-   private final List<Entity> entities = new ArrayList<>();
+   private final List<Span> sentences = new ArrayList<>();
+   private final List<Span> entities = new ArrayList<>();
    private final String text;
 
    @Override
-   public int hashCode(){
+   public int hashCode() {
       return text.hashCode();
    }
 
@@ -26,44 +25,36 @@ public class Doc {
       //Add Tokens
       PyIterator iterator = new PyIterator((PyObject) spacyDoc.getAttr("__iter__", PyCallable.class).call());
       while (iterator.hasNext()) {
-         doc.addToken(iterator.next());
+         try (PyObject spacyObject = iterator.next()) {
+            doc.addToken(spacyObject);
+         }
       }
 
       //Add Sentences
       iterator = new PyIterator((PyObject) spacyDoc.getAttr("sents"));
-      int index = 0;
       while (iterator.hasNext()) {
-         doc.addSentence(index, iterator.next());
-         index++;
+         try (PyObject spacyObject = iterator.next()) {
+            doc.sentences.add(new Span(
+                  spacyObject.getAttr("start", Long.class).intValue(),
+                  spacyObject.getAttr("end", Long.class).intValue(),
+                  "SENTENCE",
+                  doc
+            ));
+         }
       }
 
       //Add Entities
-      for( Object e : spacyDoc.getAttr("ents", List.class)){
-         doc.addEntity((PyObject) e);
+      for (Object e : spacyDoc.getAttr("ents", List.class)) {
+         try (PyObject spacyObject = (PyObject) e) {
+            doc.entities.add(new Span(
+                  spacyObject.getAttr("start", Long.class).intValue(),
+                  spacyObject.getAttr("end", Long.class).intValue(),
+                  spacyObject.getAttr("label_", String.class),
+                  doc
+            ));
+         }
       }
       return doc;
-   }
-
-   private Sentence addSentence(int index, PyObject spacyObject) {
-      Sentence sentence = new Sentence(
-            index,
-            spacyObject.getAttr("start", Long.class).intValue(),
-            spacyObject.getAttr("end", Long.class).intValue(),
-            this
-      );
-      sentences.add(sentence);
-      return sentence;
-   }
-
-   private Entity addEntity(PyObject spacyObject) {
-      Entity entity = new Entity(
-            spacyObject.getAttr("start", Long.class).intValue(),
-            spacyObject.getAttr("end", Long.class).intValue(),
-            spacyObject.getAttr("label_", String.class),
-            this
-      );
-      entities.add(entity);
-      return entity;
    }
 
    private Token addToken(PyObject spacyObject) {

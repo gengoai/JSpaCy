@@ -5,7 +5,6 @@ import jep.python.PyCallable;
 import jep.python.PyObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class JSpacy {
@@ -38,10 +37,10 @@ public class JSpacy {
    public static void main(String[] args) {
       JSpacy spacy = new JSpacy(EN_CORE_WEB_SM);
       for (Doc doc : spacy.pipe("The man on the hill with the telescope  . He ran a marathon last tuesday.")) {
-         for (Sentence sentence : doc.getSentences()) {
+         for (Span sentence : doc.getSentences()) {
             System.out.println(sentence);
-            for (Entity entity : sentence.getEntities()) {
-               System.out.println("\t"+ entity.getText() + "/" + entity.getLabel() + " " + entity.getTokens());
+            for (Span entity : sentence.getEntities()) {
+               System.out.println("\t"+ entity.getText() + "/" + entity.getLabel() + " " + entity.getTokens() + "  " + entity.getEntities());
             }
          }
       }
