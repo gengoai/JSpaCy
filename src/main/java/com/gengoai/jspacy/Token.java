@@ -2,13 +2,15 @@ package com.gengoai.jspacy;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
 @Data
-public class Token {
+public class Token implements Serializable {
+   private static final long serialVersionUID = 1L;
    private final String text;
    private final String pos;
    private final String lemma;

@@ -2,11 +2,13 @@ package com.gengoai.jspacy;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
-public class Span {
+public class Span implements Serializable {
+   private static final long serialVersionUID = 1L;
    private final int startTokenIdx;
    private final int endTokenIdx;
    private final String label;

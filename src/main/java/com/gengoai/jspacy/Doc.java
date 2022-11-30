@@ -4,11 +4,13 @@ import jep.python.PyCallable;
 import jep.python.PyObject;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class Doc {
+public class Doc implements Serializable {
+   private static final long serialVersionUID = 1L;
    private final List<Token> tokens = new ArrayList<>();
    private final List<Span> sentences = new ArrayList<>();
    private final List<Span> entities = new ArrayList<>();
