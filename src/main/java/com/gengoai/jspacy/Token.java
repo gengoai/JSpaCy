@@ -11,15 +11,17 @@ import java.util.Objects;
 @Data
 public class Token implements Serializable {
    private static final long serialVersionUID = 1L;
-   private final String text;
    private final String pos;
    private final String lemma;
    private final int i;
    private final int charStart;
+   private final int charEnd;
    private final String shape;
    private final String tag;
+   private final String dep;
    private final int head;
    private final int[] children;
+   private final float[] vector;
    private final Doc parent;
 
 
@@ -29,12 +31,16 @@ public class Token implements Serializable {
    }
 
    public int length() {
-      return text.length();
+      return charEnd - charStart;
    }
 
    @Override
    public String toString() {
-      return text;
+      return parent.getText().substring(charStart, charEnd);
+   }
+
+   public String getText() {
+      return toString();
    }
 
    public Token getHead() {
@@ -90,4 +96,14 @@ public class Token implements Serializable {
       }
       return entities;
    }
+
+
+   public double similarity(Token rhs) {
+      return ArrayUtils.cosine(getVector(), rhs.getVector());
+   }
+
+   public double similarity(Span rhs) {
+      return ArrayUtils.cosine(getVector(), rhs.getVector());
+   }
+
 }

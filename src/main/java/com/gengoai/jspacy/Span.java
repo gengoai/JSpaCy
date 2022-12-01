@@ -14,12 +14,18 @@ public class Span implements Serializable {
    private final String label;
    private final Doc parent;
 
+   public List<Span> getEntities() {
+      return parent.getTokens()
+                   .subList(startTokenIdx, endTokenIdx)
+                   .stream()
+                   .flatMap(t -> t.getEntities().stream())
+                   .filter(s -> !s.equals(this))
+                   .distinct()
+                   .collect(Collectors.toList());
+   }
 
-   @Override
-   public String toString() {
-      return parent.getText().substring(
-            parent.getTokens().get(startTokenIdx).getCharStart(),
-            parent.getTokens().get(endTokenIdx - 1).getCharStart() + parent.getTokens().get(endTokenIdx - 1).length());
+   public Span getSentence() {
+      return parent.getTokens().get(startTokenIdx).getSentence();
    }
 
    public String getText() {
@@ -30,17 +36,26 @@ public class Span implements Serializable {
       return parent.getTokens().subList(startTokenIdx, endTokenIdx);
    }
 
-   public Span getSentence() {
-      return parent.getTokens().get(startTokenIdx).getSentence();
+   public float[] getVector() {
+      List<Token> tokens = getTokens();
+      float[][] vectors = new float[tokens.size()][];
+      for (int i = 0; i < tokens.size(); i++) {
+         vectors[i] = tokens.get(i).getVector();
+      }
+      return ArrayUtils.average(vectors);
    }
 
-   public List<Span> getEntities() {
-      return parent.getTokens()
-                   .subList(startTokenIdx, endTokenIdx)
-                   .stream()
-                   .flatMap(t -> t.getEntities().stream())
-                   .filter(s -> !s.equals(this))
-                   .distinct()
-                   .collect(Collectors.toList());
+   public double similarity(Token rhs) {
+      return ArrayUtils.cosine(getVector(), rhs.getVector());
+   }
+
+   public double similarity(Span rhs) {
+      return ArrayUtils.cosine(getVector(), rhs.getVector());
+   }
+
+   @Override
+   public String toString() {
+      return parent.getText().substring(parent.getTokens().get(startTokenIdx).getCharStart(),
+                                        parent.getTokens().get(endTokenIdx - 1).getCharEnd());
    }
 }

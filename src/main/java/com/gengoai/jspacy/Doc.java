@@ -1,5 +1,6 @@
 package com.gengoai.jspacy;
 
+import jep.NDArray;
 import jep.python.PyCallable;
 import jep.python.PyObject;
 import lombok.Data;
@@ -71,15 +72,18 @@ public class Doc implements Serializable {
          children[i] = ids.get(i).intValue();
       }
       Token token = new Token(
-            spacyObject.getAttr("orth_", String.class),
             spacyObject.getAttr("pos_", String.class),
             spacyObject.getAttr("lemma_", String.class),
             spacyObject.getAttr("i", Long.class).intValue(),
             spacyObject.getAttr("idx", Long.class).intValue(),
+            spacyObject.getAttr("idx", Long.class)
+                       .intValue() + ((Number) spacyObject.getAttr("__len__", PyCallable.class).call()).intValue(),
             spacyObject.getAttr("shape_", String.class),
             spacyObject.getAttr("tag_", String.class),
+            spacyObject.getAttr("dep_", String.class),
             head.getAttr("i", Long.class).intValue(),
             children,
+            (float[]) spacyObject.getAttr("vector", NDArray.class).getData(),
             this
       );
       tokens.add(token);
