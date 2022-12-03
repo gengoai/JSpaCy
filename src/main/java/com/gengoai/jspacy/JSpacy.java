@@ -5,7 +5,6 @@ import jep.python.PyCallable;
 import jep.python.PyObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class JSpacy {
@@ -34,14 +33,5 @@ public class JSpacy {
       }
       return documents;
    }
-
-   public static void main(String[] args) {
-      JSpacy spacy = new JSpacy(EN_CORE_WEB_SM);
-      for (Doc doc : spacy.pipe("The man on the hill with the telescope  . He ran a marathon last tuesday.",
-                                "The lady on the mountain with a gun. She murdered Jay with a knife last month.")) {
-         System.out.println(doc.getSentences().get(0).similarity(doc.getSentences().get(1)));
-      }
-   }
-
 
 }
