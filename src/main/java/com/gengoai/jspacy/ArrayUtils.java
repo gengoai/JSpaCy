@@ -15,6 +15,14 @@ public class ArrayUtils {
       return dot / (Math.sqrt(mv1) * Math.sqrt(mv2));
    }
 
+   public static double norm(float[] vector) {
+      double norm = 0;
+      for (float v : vector) {
+         norm += v * v;
+      }
+      return Math.sqrt(norm);
+   }
+
    public static float[] average(float[][] vectors) {
       float[] average = new float[vectors[0].length];
       for (float[] vector : vectors) {

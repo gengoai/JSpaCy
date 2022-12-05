@@ -34,4 +34,13 @@ public class JSpacy {
       return documents;
    }
 
+   public static void main(String[] args) {
+      JSpacy nlp = new JSpacy(JSpacy.EN_CORE_WEB_SM);
+      List<Doc> docs = nlp.pipe("I like New York in Autumn.");
+      Span span = docs.get(0).span(2,4, "SPAN");
+      System.out.println(span);
+      System.out.println(span.getLemma());
+      System.out.println(span.getRoot());
+   }
+
 }

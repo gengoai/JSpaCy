@@ -24,29 +24,6 @@ public class Token implements Serializable {
    private final float[] vector;
    private final Doc parent;
 
-
-   @Override
-   public int hashCode() {
-      return Objects.hashCode(i);
-   }
-
-   public int length() {
-      return charEnd - charStart;
-   }
-
-   @Override
-   public String toString() {
-      return parent.getText().substring(charStart, charEnd);
-   }
-
-   public String getText() {
-      return toString();
-   }
-
-   public Token getHead() {
-      return parent.getTokens().get(head);
-   }
-
    public Iterable<Token> getChildren() {
       return () -> new Iterator<Token>() {
          int i = -1;
@@ -64,18 +41,123 @@ public class Token implements Serializable {
       };
    }
 
-   public Token next() {
+   public List<Span> getEntities() {
+      List<Span> entities = new ArrayList<>();
+      for (Span entity : parent.getEntities()) {
+         if (entity.getStartTokenIdx() <= i && entity.getEndTokenIdx() > i) {
+            entities.add(entity);
+         }
+      }
+      return entities;
+   }
+
+   public List<Token> pathToRoot() {
+      List<Token> path = new ArrayList<>();
+      Token current = getHead();
+      String ndep = current.dep;
+      while (!ndep.equals("ROOT")) {
+         path.add(current);
+         current = current.getHead();
+         ndep = current.dep;
+      }
+      path.add(current);
+      return path;
+   }
+
+   public List<Span> getNounChunks() {
+      List<Span> nounChunks = new ArrayList<>();
+      for (Span np : parent.getNounChunks()) {
+         if (np.getStartTokenIdx() <= i && np.getEndTokenIdx() > i) {
+            nounChunks.add(np);
+         }
+      }
+      return nounChunks;
+   }
+
+   public Token getHead() {
+      return parent.getTokens().get(head);
+   }
+
+   public Iterable<Token> getLeftChildren() {
+      return () -> new Iterator<Token>() {
+         int i = -1;
+         Integer nextIdx = null;
+
+         @Override
+         public boolean hasNext() {
+            return getNextIndex();
+         }
+
+         @Override
+         public Token next() {
+            getNextIndex();
+            int r = nextIdx;
+            nextIdx = null;
+            return parent.getTokens().get(r);
+         }
+
+         private boolean getNextIndex() {
+            if (nextIdx == null) {
+               while (i + 1 < children.length) {
+                  i++;
+                  if (children[i] < Token.this.i) {
+                     nextIdx = children[i];
+                     return true;
+                  }
+               }
+               return false;
+            }
+            return true;
+         }
+      };
+   }
+
+   public Token getNextToken() {
       if (i + 1 < parent.getTokens().size()) {
          return parent.getTokens().get(i + 1);
       }
       return null;
    }
 
-   public Token previous() {
+   public Token getPreviousToken() {
       if (i > 0) {
          return parent.getTokens().get(i - 1);
       }
       return null;
+   }
+
+   public Iterable<Token> getRightChildren() {
+      return () -> new Iterator<Token>() {
+         int i = -1;
+         Integer nextIdx = null;
+
+         @Override
+         public boolean hasNext() {
+            return getNextIndex();
+         }
+
+         @Override
+         public Token next() {
+            getNextIndex();
+            int r = nextIdx;
+            nextIdx = null;
+            return parent.getTokens().get(r);
+         }
+
+         private boolean getNextIndex() {
+            if (nextIdx == null) {
+               while (i + 1 < children.length) {
+                  i++;
+                  if (children[i] > Token.this.i) {
+                     nextIdx = children[i];
+                     return true;
+                  }
+               }
+               return false;
+            }
+            return true;
+         }
+      };
    }
 
    public Span getSentence() {
@@ -87,16 +169,18 @@ public class Token implements Serializable {
       return null;
    }
 
-   public List<Span> getEntities() {
-      List<Span> entities = new ArrayList<>();
-      for (Span entity : parent.getEntities()) {
-         if (entity.getStartTokenIdx() <= i && entity.getEndTokenIdx() > i) {
-            entities.add(entity);
-         }
-      }
-      return entities;
+   public String getText() {
+      return toString();
    }
 
+   @Override
+   public int hashCode() {
+      return Objects.hashCode(i);
+   }
+
+   public int length() {
+      return charEnd - charStart;
+   }
 
    public double similarity(Token rhs) {
       return ArrayUtils.cosine(getVector(), rhs.getVector());
@@ -104,6 +188,15 @@ public class Token implements Serializable {
 
    public double similarity(Span rhs) {
       return ArrayUtils.cosine(getVector(), rhs.getVector());
+   }
+
+   public double similarity(Doc rhs) {
+      return ArrayUtils.cosine(getVector(), rhs.getVector());
+   }
+
+   @Override
+   public String toString() {
+      return parent.getText().substring(charStart, charEnd);
    }
 
 }

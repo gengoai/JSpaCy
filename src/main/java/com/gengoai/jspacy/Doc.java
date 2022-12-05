@@ -7,20 +7,18 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 @Data
-public class Doc implements Serializable {
+public class Doc implements Serializable, Iterable<Token> {
    private static final long serialVersionUID = 1L;
    private final List<Token> tokens = new ArrayList<>();
    private final List<Span> sentences = new ArrayList<>();
    private final List<Span> entities = new ArrayList<>();
+   private final List<Span> nounChunks = new ArrayList<>();
    private final String text;
-
-   @Override
-   public int hashCode() {
-      return text.hashCode();
-   }
 
    public static Doc from(PyObject spacyDoc) {
       Doc doc = new Doc(spacyDoc.toString());
@@ -40,7 +38,7 @@ public class Doc implements Serializable {
             doc.sentences.add(new Span(
                   spacyObject.getAttr("start", Long.class).intValue(),
                   spacyObject.getAttr("end", Long.class).intValue(),
-                  "SENTENCE",
+                  spacyObject.getAttr("label_", String.class),
                   doc
             ));
          }
@@ -57,7 +55,73 @@ public class Doc implements Serializable {
             ));
          }
       }
+
+      //Add Noun Chunks
+      iterator = new PyIterator((PyObject) spacyDoc.getAttr("noun_chunks"));
+      while (iterator.hasNext()) {
+         try (PyObject spacyObject = iterator.next()) {
+            doc.nounChunks.add(new Span(
+                  spacyObject.getAttr("start", Long.class).intValue(),
+                  spacyObject.getAttr("end", Long.class).intValue(),
+                  spacyObject.getAttr("label_", String.class),
+                  doc
+            ));
+         }
+      }
+
       return doc;
+   }
+
+   public Token getToken(int tokenIndex) {
+      return tokens.get(tokenIndex);
+   }
+
+   public float[] getVector() {
+      List<Token> tokens = getTokens();
+      float[][] vectors = new float[tokens.size()][];
+      for (int i = 0; i < tokens.size(); i++) {
+         vectors[i] = tokens.get(i).getVector();
+      }
+      return ArrayUtils.average(vectors);
+   }
+
+   public double getVectorNorm() {
+      return ArrayUtils.norm(getVector());
+   }
+
+   public boolean hasVector() {
+      return getVector().length > 1;
+   }
+
+   @Override
+   public int hashCode() {
+      return text.hashCode();
+   }
+
+   @Override
+   public Iterator<Token> iterator() {
+      return Collections.unmodifiableList(tokens).iterator();
+   }
+
+   public int length() {
+      return tokens.size();
+   }
+
+   public double similarity(Token rhs) {
+      return ArrayUtils.cosine(getVector(), rhs.getVector());
+   }
+
+   public double similarity(Span rhs) {
+      return ArrayUtils.cosine(getVector(), rhs.getVector());
+   }
+
+   public double similarity(Doc rhs) {
+      return ArrayUtils.cosine(getVector(), rhs.getVector());
+   }
+
+   @Override
+   public String toString() {
+      return text;
    }
 
    private Token addToken(PyObject spacyObject) {
@@ -90,9 +154,14 @@ public class Doc implements Serializable {
       return token;
    }
 
-   @Override
-   public String toString() {
-      return text;
+   public Span span(int startToken, int endToken, String label) {
+      return new Span(startToken,
+                      endToken,
+                      label,
+                      this);
    }
 
+   public Span span(int startToken, int endToken) {
+      return span(startToken, endToken, "SPAN");
+   }
 }
