@@ -26,6 +26,10 @@ public class Span implements Serializable, Iterable<Token> {
                    .collect(Collectors.toList());
    }
 
+   public String getLemma() {
+      return getTokens().stream().map(Token::getLemma).collect(Collectors.joining(" "));
+   }
+
    public List<Span> getNounChunks() {
       return parent.getTokens()
                    .subList(startTokenIdx, endTokenIdx)
@@ -60,10 +64,6 @@ public class Span implements Serializable, Iterable<Token> {
 
    public Token getToken(int tokenIndex) {
       return getTokens().get(tokenIndex);
-   }
-
-   public String getLemma() {
-      return getTokens().stream().map(Token::getLemma).collect(Collectors.joining(" "));
    }
 
    public List<Token> getTokens() {

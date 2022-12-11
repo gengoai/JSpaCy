@@ -119,6 +119,17 @@ public class Doc implements Serializable, Iterable<Token> {
       return ArrayUtils.cosine(getVector(), rhs.getVector());
    }
 
+   public Span span(int startToken, int endToken, String label) {
+      return new Span(startToken,
+                      endToken,
+                      label,
+                      this);
+   }
+
+   public Span span(int startToken, int endToken) {
+      return span(startToken, endToken, "SPAN");
+   }
+
    @Override
    public String toString() {
       return text;
@@ -154,14 +165,44 @@ public class Doc implements Serializable, Iterable<Token> {
       return token;
    }
 
-   public Span span(int startToken, int endToken, String label) {
-      return new Span(startToken,
-                      endToken,
-                      label,
-                      this);
-   }
+   public String toCoNLL() {
+      StringBuilder output = new StringBuilder();
+      int index = 1;
+      for (Span sentence : sentences) {
+         output.append("# sent_id = ").append(index).append("\n");
+         index++;
+         output.append("# text = ").append(sentence).append("\n");
+         int offset = sentence.getTokens().get(0).getI();
+         for (Token token : sentence.getTokens()) {
+            List<Span> entity = token.getEntities();
+            String iobTag = "O";
+            if (entity.size() > 0) {
+               if (entity.get(0).getStartTokenIdx() == token.getI()) {
+                  iobTag = "B-" + entity.get(0).getLabel();
+               } else {
+                  iobTag = "I-" + entity.get(0).getLabel();
+               }
+            }
+            output.append(token.getI()+1-offset)
+                  .append("\t")
+                  .append(token)
+                  .append("\t")
+                  .append(token.getLemma())
+                  .append("\t")
+                  .append(token.getPos())
+                  .append("\t")
+                  .append(token.getTag())
+                  .append("\t")
+                  .append(token.getHead().getI()+1-offset)
+                  .append("\t")
+                  .append(token.getDep())
+                  .append("\t")
+                  .append(iobTag)
+                  .append("\n");
+         }
+         output.append("\n");
+      }
 
-   public Span span(int startToken, int endToken) {
-      return span(startToken, endToken, "SPAN");
+      return output.toString();
    }
 }

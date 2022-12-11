@@ -64,6 +64,10 @@ public class Token implements Serializable {
       return path;
    }
 
+   public Token getNeighbor(int relativePosition) {
+      return parent.getToken(i + relativePosition);
+   }
+
    public List<Span> getNounChunks() {
       List<Span> nounChunks = new ArrayList<>();
       for (Span np : parent.getNounChunks()) {
@@ -78,7 +82,7 @@ public class Token implements Serializable {
       return parent.getTokens().get(head);
    }
 
-   public Iterable<Token> getLeftChildren() {
+   public Iterable<Token> getLefts() {
       return () -> new Iterator<Token>() {
          int i = -1;
          Integer nextIdx = null;
@@ -126,7 +130,7 @@ public class Token implements Serializable {
       return null;
    }
 
-   public Iterable<Token> getRightChildren() {
+   public Iterable<Token> getRights() {
       return () -> new Iterator<Token>() {
          int i = -1;
          Integer nextIdx = null;

@@ -7,6 +7,9 @@ import jep.python.PyObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Spacy wrapper that provides {@link #pipe(String...)} to annotate documents.
+ */
 public class JSpacy {
    public static final String EN_CORE_WEB_SM = "en_core_web_sm";
 
@@ -36,11 +39,8 @@ public class JSpacy {
 
    public static void main(String[] args) {
       JSpacy nlp = new JSpacy(JSpacy.EN_CORE_WEB_SM);
-      List<Doc> docs = nlp.pipe("I like New York in Autumn.");
-      Span span = docs.get(0).span(2,4, "SPAN");
-      System.out.println(span);
-      System.out.println(span.getLemma());
-      System.out.println(span.getRoot());
+      List<Doc> docs = nlp.pipe("I like New York in Autumn. But I love Florida in the Winter.");
+      System.out.println(docs.get(0).toCoNLL());
    }
 
 }
